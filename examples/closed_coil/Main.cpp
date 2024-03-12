@@ -1,6 +1,7 @@
 #include "hephaestus.hpp"
 
 const char * DATA_DIR = "../../data/";
+const char *device_config = "cpu";
 
 hephaestus::Coefficients
 defineCoefficients()
@@ -97,11 +98,15 @@ main(int argc, char * argv[])
   mfem::OptionsParser args(argc, argv);
   args.AddOption(
       &DATA_DIR, "-dataDir", "--data_directory", "Directory storing input data for tests.");
+  args.AddOption(&device_config, "-d", "--device",
+                  "Device configuration string, see Device::Configure().");
   args.Parse();
   MPI_Init(&argc, &argv);
 
   logger.set_level(spdlog::level::info);
 
+  mfem::Device device(device_config);
+  if (myid == 0) { device.Print(); }
   // Create Formulation
   auto problem_builder = std::make_unique<hephaestus::MagnetostaticFormulation>(
       "magnetic_reluctivity", "magnetic_permeability", "magnetic_vector_potential");
